@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>College Inquiry Chatbot</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e2530;
+    --border: rgba(255,255,255,0.08);
+    --accent: #4f9eff;
+    --accent2: #7ee8a2;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --bot-bg: #1e2530;
+    --user-bg: #1a3a5c;
+    --tag-bg: rgba(79,158,255,0.12);
+    --tag-border: rgba(79,158,255,0.3);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--surface);
+  }
+
+  .logo-circle {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #4f9eff, #7ee8a2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 600; color: #0d1117; flex-shrink: 0;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem; font-weight: 400; color: var(--text);
+  }
+
+  header p { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  .container { width: 100%; max-width: 780px; flex: 1; display: flex; flex-direction: column; }
+
+  #chat-window {
+    flex: 1;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-height: 400px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .message { display: flex; gap: 0.75rem; max-width: 85%; animation: fadeIn 0.3s ease; }
+  .message.user { align-self: flex-end; flex-direction: row-reverse; }
+  .message.bot { align-self: flex-start; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+  }
+
+  .bot .avatar { background: linear-gradient(135deg, #4f9eff33, #7ee8a233); border: 1px solid var(--accent); color: var(--accent); }
+  .user .avatar { background: var(--user-bg); border: 1px solid rgba(79,158,255,0.4); color: var(--accent); }
+
+  .bubble {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .bot .bubble { background: var(--bot-bg); border: 1px solid var(--border); border-top-left-radius: 4px; }
+  .user .bubble { background: var(--user-bg); border: 1px solid rgba(79,158,255,0.2); border-top-right-radius: 4px; }
+
+  .quick-btns {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    padding: 0 1.5rem 1rem;
+  }
+
+  .q-btn {
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    color: var(--accent);
+    border-radius: 20px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .q-btn:hover { background: rgba(79,158,255,0.22); transform: translateY(-1px); }
+  .q-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  .input-area {
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.75rem;
+    background: var(--surface);
+  }
+
+  input[type="text"] {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]:focus { border-color: var(--accent); }
+  input[type="text"]::placeholder { color: var(--muted); }
+
+  button#send-btn {
+    background: var(--accent);
+    color: #0d1117;
+    border: none;
+    border-radius: 8px;
+    padding: 0.65rem 1.2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  button#send-btn:hover { background: #70b3ff; }
+  button#send-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .status-bar {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding: 0.5rem;
+  }
+
+  .highlight { color: var(--accent2); font-weight: 500; }
+  .highlight2 { color: var(--accent); font-weight: 500; }
+
+  .summary-box {
+    background: var(--surface2);
+    border: 1px solid rgba(126,232,162,0.25);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-circle"></div>
+  <div>
+    <h1>University of Cincinnati — Student Inquiry Bot</h1>
+    <p>Ask me anything about admissions, programs, and campus life</p>
+  </div>
+</header>
+
+<div class="container">
+  <div id="chat-window"></div>
+
+  <div class="quick-btns" id="quick-btns">
+    <button class="q-btn" onclick="sendQuestion(this, 'Does the college have a football team?')">🏈 Football team?</button>
+    <button class="q-btn" onclick="sendQuestion(this, 'Does it offer a Computer Science major?')">💻 CS Major?</button>
+    <button class="q-btn" onclick="sendQuestion(this, 'What is the in-state tuition?')">💰 In-state tuition?</button>
+    <button class="q-btn" onclick="sendQuestion(this, 'Does it provide on-campus housing?')">🏠 On-campus housing?</button>
+  </div>
+
+  <div class="input-area">
+    <input type="text" id="user-input" placeholder="Type a message or click a question above..." />
+    <button id="send-btn" onclick="handleInput()">Send ↵</button>
+  </div>
+  <div class="status-bar" id="status-bar">Start by entering your name and email when prompted</div>
+</div>
+
+<script>
+const CREATOR = {
+  first: "Nekruz",
+  last: "Ashrapov",
+  email: "ashrapnz@mail.uc.edu"
+};
+
+let state = "collect_first";
+let userData = { first: "", last: "", email: "" };
+let questionsAnswered = new Set();
+
+const QA = {
+  "Does the college have a football team?": `<strong>Yes!</strong> University of Cincinnati has a <span class="highlight">Division I football program</span> — the Bearcats. The team competes in the Big East Conference and plays home games at <span class="highlight2">Nippert Stadium</span> (capacity 40,000). The program has earned multiple conference championships in the past decade, and student tickets are included with your activity fee.`,
+
+  "Does it offer a Computer Science major?": `Absolutely! The <span class="highlight">Department of Computer Science & Engineering</span> offers both a B.S. and B.A. in Computer Science. Concentrations include: <strong>AI & Machine Learning</strong>, <strong>Cybersecurity</strong>, <strong>Software Engineering</strong>, and <strong>Data Science</strong>. Department houses the Innovation Lab with state-of-the-art computing resources open 24/7 to CS students.`,
+
+  "What is the in-state tuition?": `For the <span class="highlight">2024–2025 academic year</span>, in-state tuition is <span class="highlight2"><strong>$11,240 per semester</strong></span> ($22,480 annually). This covers 12–18 credit hours. Additional fees include a $350 student activity fee and $120 technology fee per semester. Over 68% of in-state students receive some form of financial aid, and the average award is $8,400. We recommend completing the <strong>FAFSA</strong> by March 1 for priority consideration.`,
+
+  "Does it provide on-campus housing?": `Yes! University of Cincinnati offers <span class="highlight">7 residence halls</span> housing over 3,200 students. Options range from traditional double rooms to suite-style and apartment-style units for upperclassmen. All halls include <strong>high-speed Wi-Fi, laundry facilities, and 24-hour security</strong>. Housing is <span class="highlight2">guaranteed for all first-year students</span> who apply by May 1. Room rates start at $3,400/semester (double occupancy). Upperclassmen can apply through the Housing Lottery each February.`
+};
+
+function addMessage(text, role) {
+  const win = document.getElementById("chat-window");
+  const msg = document.createElement("div");
+  msg.className = `message ${role}`;
+  const initials = role === "bot" ? "WC" : (userData.first ? userData.first[0].toUpperCase() : "U");
+  msg.innerHTML = `<div class="avatar">${initials}</div><div class="bubble">${text}</div>`;
+  win.appendChild(msg);
+  win.scrollTop = win.scrollHeight;
+}
+
+function setStatus(text) {
+  document.getElementById("status-bar").textContent = text;
+}
+
+function handleInput() {
+  const input = document.getElementById("user-input");
+  const val = input.value.trim();
+  if (!val) return;
+  input.value = "";
+  processInput(val);
+}
+
+document.getElementById("user-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") handleInput();
+});
+
+function processInput(val) {
+  if (state === "collect_first") {
+    addMessage(val, "user");
+    userData.first = val;
+    state = "collect_last";
+    setTimeout(() => {
+      addMessage(`Nice to meet you, <span class="highlight2">${val}</span>! What's your last name?`, "bot");
+      setStatus("Step 2 of 3: Last name");
+    }, 300);
+
+  } else if (state === "collect_last") {
+    addMessage(val, "user");
+    userData.last = val;
+    state = "collect_email";
+    setTimeout(() => {
+      addMessage(`Got it. And your <strong>email address</strong>?`, "bot");
+      setStatus("Step 3 of 3: Email address");
+    }, 300);
+
+  } else if (state === "collect_email") {
+    addMessage(val, "user");
+    userData.email = val;
+    state = "questions";
+    setTimeout(() => {
+      addMessage(`Perfect! Welcome, <span class="highlight2">${userData.first} ${userData.last}</span> 👋<br><br>I'm the University of Cincinnati inquiry assistant. Use the buttons above or type your questions below. I'm ready to help!`, "bot");
+      setStatus("Ask any of the four questions using the buttons or type freely");
+      enableQuickBtns();
+    }, 300);
+
+  } else if (state === "questions") {
+    addMessage(val, "user");
+    const matched = Object.keys(QA).find(q => val.toLowerCase().includes(q.toLowerCase().substring(0, 15)));
+    if (matched) {
+      answerQuestion(matched);
+    } else {
+      setTimeout(() => {
+        addMessage(`I can best help with the four listed topics. Try clicking one of the question buttons above, or type a keyword like "football", "tuition", "housing", or "computer science".`, "bot");
+        checkAllAnswered();
+      }, 400);
+    }
+  }
+}
+
+function sendQuestion(btn, question) {
+  if (state !== "questions") return;
+  btn.disabled = true;
+  addMessage(question, "user");
+  answerQuestion(question);
+}
+
+function answerQuestion(question) {
+  questionsAnswered.add(question);
+  setTimeout(() => {
+    addMessage(QA[question], "bot");
+    checkAllAnswered();
+  }, 400);
+}
+
+function checkAllAnswered() {
+  if (questionsAnswered.size >= 4 && state === "questions") {
+    state = "done";
+    setTimeout(() => {
+      addMessage(buildSummary(), "bot");
+      setStatus("Session complete — all questions answered!");
+      document.getElementById("send-btn").disabled = true;
+      document.getElementById("user-input").disabled = true;
+      document.getElementById("user-input").placeholder = "Chat session complete";
+    }, 600);
+  }
+}
+
+function buildSummary() {
+  return `
+    <strong>Chat Summary — Thank you for visiting!</strong>
+    <div class="summary-box">
+      <strong>Student Info</strong><br>
+      Name: <span class="highlight2">${userData.first} ${userData.last}</span><br>
+      Email: <span class="highlight2">${userData.email}</span>
+    </div>
+    <div class="summary-box" style="margin-top:0.5rem; border-color: rgba(79,158,255,0.2);">
+      <strong>Chatbot Creator</strong><br>
+      Name: <span class="highlight">${CREATOR.first} ${CREATOR.last}</span><br>
+      Email: <span class="highlight">${CREATOR.email}</span>
+    </div>
+    <br>We hope this was helpful! Visit <span class="highlight2">uc.edu/admissions</span> for more info or call <strong>1-800-UC-ADMISSIONS</strong>.
+  `;
+}
+
+function enableQuickBtns() {
+  document.querySelectorAll(".q-btn").forEach(b => b.disabled = false);
+}
+
+window.onload = () => {
+  setTimeout(() => {
+    addMessage(`Hello! Welcome to the <strong>University of Cincinnati</strong> inquiry chatbot 🎓<br><br>Before we get started, I'd love to know who I'm speaking with. What's your <strong>first name</strong>?`, "bot");
+    setStatus("Step 1 of 3: First name");
+    document.querySelectorAll(".q-btn").forEach(b => b.disabled = true);
+  }, 400);
+};
+</script>
+</body>
+</html>
