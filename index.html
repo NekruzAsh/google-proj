@@ -192,10 +192,10 @@
   <div id="chat-window"></div>
 
   <div class="quick-btns" id="quick-btns">
-    <button class="q-btn" onclick="sendQuestion(this, 'Does the college have a football team?')">🏈 Football team?</button>
-    <button class="q-btn" onclick="sendQuestion(this, 'Does it offer a Computer Science major?')">💻 CS Major?</button>
-    <button class="q-btn" onclick="sendQuestion(this, 'What is the in-state tuition?')">💰 In-state tuition?</button>
-    <button class="q-btn" onclick="sendQuestion(this, 'Does it provide on-campus housing?')">🏠 On-campus housing?</button>
+    <button class="q-btn" onclick="sendQuestion(this, 'Does the college have a football team?')">Football team?</button>
+    <button class="q-btn" onclick="sendQuestion(this, 'Does it offer a Computer Science major?')">CS Major?</button>
+    <button class="q-btn" onclick="sendQuestion(this, 'What is the in-state tuition?')">In-state tuition?</button>
+    <button class="q-btn" onclick="sendQuestion(this, 'Does it provide on-campus housing?')">On-campus housing?</button>
   </div>
 
   <div class="input-area">
@@ -230,7 +230,7 @@ function addMessage(text, role) {
   const win = document.getElementById("chat-window");
   const msg = document.createElement("div");
   msg.className = `message ${role}`;
-  const initials = role === "bot" ? "WC" : (userData.first ? userData.first[0].toUpperCase() : "U");
+  const initials = role === "bot" ? "UC" : (userData.first ? userData.first[0].toUpperCase() : "U");
   msg.innerHTML = `<div class="avatar">${initials}</div><div class="bubble">${text}</div>`;
   win.appendChild(msg);
   win.scrollTop = win.scrollHeight;
@@ -276,7 +276,7 @@ function processInput(val) {
     userData.email = val;
     state = "questions";
     setTimeout(() => {
-      addMessage(`Perfect! Welcome, <span class="highlight2">${userData.first} ${userData.last}</span> 👋<br><br>I'm the University of Cincinnati inquiry assistant. Use the buttons above or type your questions below. I'm ready to help!`, "bot");
+      addMessage(`Perfect! Welcome, <span class="highlight2">${userData.first} ${userData.last}</span><br><br>I'm the University of Cincinnati inquiry assistant. Use the buttons above or type your questions below. I'm ready to help!`, "bot");
       setStatus("Ask any of the four questions using the buttons or type freely");
       enableQuickBtns();
     }, 300);
@@ -346,7 +346,7 @@ function enableQuickBtns() {
 
 window.onload = () => {
   setTimeout(() => {
-    addMessage(`Hello! Welcome to the <strong>University of Cincinnati</strong> inquiry chatbot 🎓<br><br>Before we get started, I'd love to know who I'm speaking with. What's your <strong>first name</strong>?`, "bot");
+    addMessage(`Hello! Welcome to the <strong>University of Cincinnati</strong> inquiry chatbot<br><br>Before we get started, I'd love to know who I'm speaking with. What's your <strong>first name</strong>?`, "bot");
     setStatus("Step 1 of 3: First name");
     document.querySelectorAll(".q-btn").forEach(b => b.disabled = true);
   }, 400);
